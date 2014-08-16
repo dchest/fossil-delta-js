@@ -15,20 +15,24 @@ var encodeUTF8 = function(arr) {
   return decodeURIComponent(escape(s.join('')));
 };
 
-test('create and apply', function(t) {
-  var NTESTS = 1;
+var makeArray = function(buf) {
+  var a = new Uint8Array(buf.length);
+  for (var i = 0; i < buf.length; i++) a[i] = buf[i];
+  return a;
+}
+
+test('delta create and apply', function(t) {
+  var NTESTS = 2;
   for (var i = 1; i <= NTESTS; i++) {
     var dir = path.join(__dirname, 'data', i.toString());
-    var origin = fs.readFileSync(path.join(dir, 'origin'));
-    var target = fs.readFileSync(path.join(dir, 'target'));
-    var goodDelta = fs.readFileSync(path.join(dir, 'delta'));
-    var delta = fossilDelta.create(decodeUTF8(origin.toString()), decodeUTF8(target.toString()));  
-    var deltaString = encodeUTF8(delta);
-    //console.log(encodeUTF8(delta));
-    t.equal(deltaString, goodDelta.toString());
-    var applied = fossilDelta.apply(decodeUTF8(origin.toString()), delta);
+    var origin = makeArray(fs.readFileSync(path.join(dir, 'origin')));
+    var target = makeArray(fs.readFileSync(path.join(dir, 'target')));
+    var goodDelta = makeArray(fs.readFileSync(path.join(dir, 'delta')));
+    var delta = makeArray(fossilDelta.create(origin, target));
+    t.deepEqual(delta, goodDelta);
+    var applied = fossilDelta.apply(origin, delta);
     t.notEqual(applied, null);
-    t.equal(encodeUTF8(applied), target.toString());
+    t.deepEqual(applied, target);
   }
   t.end();
 });

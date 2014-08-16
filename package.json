@@ -4,6 +4,7 @@
   "description": "Fossil SCM delta compression",
   "main": "fossil-delta.js",
   "scripts": {
+    "build": "uglifyjs fossil-delta.js -c -m -o fossil-delta.min.js",
     "test": "faucet test/*.js"
   },
   "author": "Dmitry Chestnykh",

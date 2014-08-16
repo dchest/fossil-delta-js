@@ -152,10 +152,9 @@ function Buf(array) {
     return String.fromCharCode(this.getByte());
   };
 
-  this.putString = function(s) {
-    // supports only ASCII strings!
-    for (var i = 0; i < s.length; i++)
-      this.putByte(s.charCodeAt(i));
+  this.putChar = function(s) {
+    // ASCII only
+    this.putByte(s.charCodeAt(0) & 0xff);
   };
 
   /*
@@ -165,16 +164,13 @@ function Buf(array) {
     var i, j;
     var zBuf = [];
     if( v===0 ){
-      this.putString('0');
-      //*(*pz)++ = '0';
-      //XXX "finish" buffer
+      this.putChar('0');
       return;
     }
     for(i=0; v>0; i++, v>>=6){
       zBuf.push(zDigits[v&0x3f]);
     }
     for(j=i-1; j>=0; j--){
-      //pz[offset] = zBuf[j];
       this.putByte(zBuf[j]);
     }
   };
@@ -332,7 +328,7 @@ fossilDelta.create = function(src, out) {
   var i, lastRead = -1;
 
   zDelta.putInt(lenOut);
-  zDelta.putString('\n'); 
+  zDelta.putChar('\n'); 
 
   /* If the source file is very small, it means that we have no
   ** chance of ever doing a copy command.  Just output a single
@@ -340,10 +336,10 @@ fossilDelta.create = function(src, out) {
   */
   if (lenSrc <= NHASH) {
     zDelta.putInt(lenOut);
-    zDelta.putString(':');
+    zDelta.putChar(':');
     zDelta.putArray(out);
     zDelta.putInt(checksum(out));
-    zDelta.putString(';');
+    zDelta.putChar(';');
     return zDelta.toArray();
   }
 
@@ -436,15 +432,15 @@ fossilDelta.create = function(src, out) {
         if( bestLitsz>0 ){
           /* Add an insert command before the copy */
           zDelta.putInt(bestLitsz);
-          zDelta.putString(':');
+          zDelta.putChar(':');
           zDelta.putArray(out.subarray(base, base+bestLitsz));
           base += bestLitsz;
         }
         base += bestCnt;
         zDelta.putInt(bestCnt);
-        zDelta.putString('@');
+        zDelta.putChar('@');
         zDelta.putInt(bestOfst);
-        zDelta.putString(',');
+        zDelta.putChar(',');
         if( bestOfst + bestCnt -1 > lastRead ){
           lastRead = bestOfst + bestCnt - 1;
         }
@@ -457,7 +453,7 @@ fossilDelta.create = function(src, out) {
         /* We have reached the end of the file and have not found any
         ** matches.  Do an "insert" for everything that does not match */
         zDelta.putInt(lenOut-base);
-        zDelta.putString(':');
+        zDelta.putChar(':');
         zDelta.putArray(out.subarray(base, base+lenOut-base)); // XXX remove base
         base = lenOut;
         break;
@@ -473,12 +469,12 @@ fossilDelta.create = function(src, out) {
   */
   if( base<lenOut ){
     zDelta.putInt(lenOut-base);
-    zDelta.putString(':');
+    zDelta.putChar(':');
     zDelta.putArray(out.subarray(base));
   }
   /* Output the final checksum record. */
   zDelta.putInt(checksum(out));
-  zDelta.putString(';');
+  zDelta.putChar(';');
   return zDelta.toArray();
 };
 
@@ -555,7 +551,7 @@ fossilDelta.apply = function(src, delta) {
           return null;
         }
         if( ofst+cnt > lenSrc ){
-          logError(' copy extends past end of input');
+          logError('copy extends past end of input');
           return null;
         }
         zOut.putArray(src.subarray(ofst, ofst+cnt));
