@@ -1,40 +1,58 @@
+// Fossil SCM delta compression algorithm
+// ======================================
+//
+// Format:
+// http://www.fossil-scm.org/index.html/doc/tip/www/delta_format.wiki
+//
+// Algorithm:
+// http://www.fossil-scm.org/index.html/doc/tip/www/delta_encoder_algorithm.wiki
+//
+// Original implementation:
+// http://www.fossil-scm.org/index.html/artifact/d1b0598adcd650b3551f63b17dfc864e73775c3d
+//
+// LICENSE
+// -------
+//
+// Copyright 2014 Dmitry Chestnykh (JavaScript port)
+// Copyright 2007 D. Richard Hipp  (original C version)
+// All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or
+// without modification, are permitted provided that the
+// following conditions are met:
+//
+//   1. Redistributions of source code must retain the above
+//      copyright notice, this list of conditions and the
+//      following disclaimer.
+//
+//   2. Redistributions in binary form must reproduce the above
+//      copyright notice, this list of conditions and the
+//      following disclaimer in the documentation and/or other
+//      materials provided with the distribution.
+//
+// THIS SOFTWARE IS PROVIDED BY THE AUTHORS ``AS IS'' AND ANY EXPRESS
+// OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+// ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OR CONTRIBUTORS BE
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
+// BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+// WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+// OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+// EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+//
+// The views and conclusions contained in the software and documentation
+// are those of the authors and contributors and should not be interpreted
+// as representing official policies, either expressed or implied, of anybody
+// else.
+//
 (function(root, factory) {
   if (typeof module !== 'undefined' && module.exports) module.exports = factory();
   else root.fossilDelta = factory();
 })(this, function() {
 
 var fossilDelta = {};
-/*
-** JS port:
-**
-** Copyright (C) 2014 Dmitry Chestnykh
-**
-** Original C version:
-**
-** Copyright (c) 2006 D. Richard Hipp
-**
-** This program is free software; you can redistribute it and/or
-** modify it under the terms of the Simplified BSD License (also
-** known as the "2-Clause License" or "FreeBSD License".)
-
-** This program is distributed in the hope that it will be useful,
-** but without any warranty; without even the implied warranty of
-** merchantability or fitness for a particular purpose.
-**
-** Author contact information:
-**   drh@hwaci.com
-**   http://www.hwaci.com/drh/
-**
-*******************************************************************************
-**
-** This module implements the delta compress algorithm.
-**
-** Though developed specifically for fossil, the code in this file
-** is generally applicable and is thus easily separated from the
-** fossil source code base.  Nothing in this file depends on anything
-** else in fossil.
-*/
-
 /*
 ** The width of a hash window in bytes.  The algorithm only works if this
 ** is a power of 2.
@@ -45,7 +63,7 @@ var NHASH = 16;
 ** The current state of the rolling hash.
 **
 ** z[] holds the values that have been hashed.  z[] is a circular buffer.
-** z[i] is the first entry and z[(i+NHASH-1)%NHASH] is the last entry of 
+** z[i] is the first entry and z[(i+NHASH-1)%NHASH] is the last entry of
 ** the window.
 **
 ** Hash.a is the sum of all elements of hash.z[].  Hash.b is a weighted
@@ -105,7 +123,7 @@ var zValue = [
   -1, 10, 11, 12, 13, 14, 15, 16,   17, 18, 19, 20, 21, 22, 23, 24,
   25, 26, 27, 28, 29, 30, 31, 32,   33, 34, 35, -1, -1, -1, -1, 36,
   -1, 37, 38, 39, 40, 41, 42, 43,   44, 45, 46, 47, 48, 49, 50, 51,
-  52, 53, 54, 55, 56, 57, 58, 59,   60, 61, 62, -1, -1, -1, 63, -1,
+  52, 53, 54, 55, 56, 57, 58, 59,   60, 61, 62, -1, -1, -1, 63, -1
 ];
 
 function Buf(array) {
@@ -117,13 +135,13 @@ function Buf(array) {
   };
 
   this.get = function(index) {
-    return this.a[this.pos + index]; 
+    return this.a[this.pos + index];
   };
 
   this.set = function(index, value) {
     this.a[this.pos + index] = value;
   };
-  
+
   this.haveBytes = function() {
     return this.pos < this.a.length;
   };
@@ -262,7 +280,7 @@ function checksum(arr) {
 /*
 ** Create a new delta.
 **
-** The delta is written into a preallocated buffer, zDelta, which 
+** The delta is written into a preallocated buffer, zDelta, which
 ** should be at least 60 bytes longer than the target file, zOut.
 ** The delta string will be NUL-terminated, but it might also contain
 ** embedded NUL characters if either the zSrc or zOut files are
@@ -278,7 +296,7 @@ function checksum(arr) {
 ** found there.  The delta_output_size() routine does exactly this.
 **
 ** After the initial size number, the delta consists of a series of
-** literal text segments and commands to copy from the SOURCE file.  
+** literal text segments and commands to copy from the SOURCE file.
 ** A copy command looks like this:
 **
 **     NNN@MMM,
@@ -316,7 +334,7 @@ function checksum(arr) {
 ** made to extend the matching section to regions that come before
 ** and after the 16-byte hash window.  A copy command is only issued
 ** if the result would use less space that just quoting the text
-** literally. Literal text is added to the delta for sections that 
+** literally. Literal text is added to the delta for sections that
 ** do not match or which can not be encoded efficiently using copy
 ** commands.
 */
@@ -328,7 +346,7 @@ fossilDelta.create = function(src, out) {
   var i, lastRead = -1;
 
   zDelta.putInt(lenOut);
-  zDelta.putChar('\n'); 
+  zDelta.putChar('\n');
 
   /* If the source file is very small, it means that we have no
   ** chance of ever doing a copy command.  Just output a single
@@ -373,9 +391,9 @@ fossilDelta.create = function(src, out) {
       iBlock = landmark[hv];
       while (iBlock >= 0 && (limit--)>0 ) {
         /*
-        ** The hash window has identified a potential match against 
+        ** The hash window has identified a potential match against
         ** landmark block iBlock.  But we need to investigate further.
-        ** 
+        **
         ** Look for a region in zOut that matches zSrc. Anchor the search
         ** at zSrc[iSrc] and zOut[base+i].  Do not include anything prior to
         ** zOut[base] or after zOut[outLen] nor anything after zSrc[srcLen].
@@ -478,10 +496,13 @@ fossilDelta.create = function(src, out) {
   return zDelta.toArray();
 };
 
+function logError(s) {
+  fossilDelta.logError ? fossilDelta.logError(s) : console.log('ERROR: ' + s);
+}
 
 /*
 ** Return the size (in bytes) of the output from applying
-** a delta. 
+** a delta.
 **
 ** This routine is provided so that an procedure that is able
 ** to call delta_apply() can learn how much space is required
@@ -492,15 +513,11 @@ fossilDelta.outputSize = function(delta){
   var zDelta = new Buf(delta);
   var size = zDelta.getInt();
   if( zDelta.getChar() !== '\n' ){
-    /* ERROR: size integer not terminated by "\n" */
+    logError('size integer not terminated by \'\\n\'');
     return -1;
   }
   return size;
 };
-
-function logError(s) {
-  fossilDelta.logError ? fossilDelta.logError(s) : console.log('ERROR: ' + s);
-}
 
 /*
 ** Apply a delta.
