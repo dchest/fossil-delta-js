@@ -49,6 +49,10 @@ Returns a delta (as `Array` of bytes) from origin to target.
 
 Returns target (as `Array` of bytes) by applying delta to origin.
 
+Returns `null` if there was an error. It also logs the reason for error with
+`console.log`. Logging can be overridden by setting `fossilDelta.logError`
+to a function accepting a string.
+
 ### fossilDelta.outputSize(delta)
 
 Returns a size of target for this delta.
