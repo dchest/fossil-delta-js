@@ -167,7 +167,7 @@ function Buf(array) {
       this.putChar('0');
       return;
     }
-    for(i=0; v>0; i++, v>>=6){
+    for(i=0; v>0; i++, v>>>=6){
       zBuf.push(zDigits[v&0x3f]);
     }
     for(j=i-1; j>=0; j--){
@@ -187,7 +187,7 @@ function Buf(array) {
        v = (v<<6) + c;
     }
     this.pos--;
-    return v;
+    return v >>> 0;
   };
 
   this.putArray = function(a) {
@@ -252,9 +252,9 @@ function checksum(arr) {
   sum3 = (((sum3 + (sum2 << 8) | 0) + (sum1 << 16) | 0) + (sum0 << 24) | 0);
   /* jshint -W086 */
   switch(N){
-    case 3:   sum3 = sum3 + (arr[z+2] <<  8) | 0;  /* falls through */
-    case 2:   sum3 = sum3 + (arr[z+1] << 16) | 0; /* falls through */
-    case 1:   sum3 = sum3 + (arr[z+0] << 24) | 0; /* falls through */
+    case 3:  sum3 = sum3 + (arr[z+2] <<  8) | 0; /* falls through */
+    case 2:  sum3 = sum3 + (arr[z+1] << 16) | 0; /* falls through */
+    case 1:  sum3 = sum3 + (arr[z+0] << 24) | 0; /* falls through */
   }
   return sum3 >>> 0;
 }
