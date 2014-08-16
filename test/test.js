@@ -21,7 +21,6 @@ test('delta create and apply', function(t) {
     var applied = fossilDelta.apply(origin, delta);
     t.notEqual(applied, null);
     t.deepEqual(applied, target);
-    console.log((new Buffer(applied)).toString());
   }
   t.end();
 });

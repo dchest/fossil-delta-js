@@ -1,0 +1,26 @@
+{
+  "name": "fossil-delta",
+  "version": "0.1.0",
+  "authors": [
+    "Dmitry Chestnykh <dmitry@codingrobots.com>"
+  ],
+  "description": "Fossil SCM delta compression",
+  "main": "fossil-delta.js",
+  "moduleType": [
+    "globals",
+    "node"
+  ],
+  "keywords": [
+    "delta",
+    "compression",
+    "encoding"
+  ],
+  "license": "BSD",
+  "homepage": "https://github.com/dchest/fossil-delta-js",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test"
+  ]
+}

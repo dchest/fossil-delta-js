@@ -1,8 +1,13 @@
 {
   "name": "fossil-delta",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Fossil SCM delta compression",
   "main": "fossil-delta.js",
+  "keywords": [
+    "delta",
+    "compression",
+    "encoding"
+  ],
   "scripts": {
     "build": "uglifyjs fossil-delta.js -c -m -o fossil-delta.min.js",
     "test": "faucet test/*.js"
