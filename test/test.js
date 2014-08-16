@@ -4,7 +4,7 @@ var path = require('path');
 var fossilDelta = require('../fossil-delta.js');
 
 var makeArray = function(buf) {
-  var a = new Uint8Array(buf.length);
+  var a = new Array(buf.length);
   for (var i = 0; i < buf.length; i++) a[i] = buf[i];
   return a;
 }
@@ -21,6 +21,7 @@ test('delta create and apply', function(t) {
     var applied = fossilDelta.apply(origin, delta);
     t.notEqual(applied, null);
     t.deepEqual(applied, target);
+    console.log((new Buffer(applied)).toString());
   }
   t.end();
 });

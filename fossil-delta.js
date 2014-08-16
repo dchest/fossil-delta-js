@@ -75,7 +75,7 @@ function Hash() {
   this.a = 0; // hash     (16-bit unsigned)
   this.b = 0; // values   (16-bit unsigned)
   this.i = 0; // start of the hash window (16-bit unsigned)
-  this.z = new Uint8Array(NHASH); // the values that have been hashed.
+  this.z = new Array(NHASH); // the values that have been hashed.
 
   /*
    ** Initialize the rolling hash using the first NHASH characters of z[]
@@ -126,38 +126,17 @@ var zValue = [
   52, 53, 54, 55, 56, 57, 58, 59,   60, 61, 62, -1, -1, -1, 63, -1
 ];
 
-function Buf(array) {
+function Reader(array) {
   this.a = array;
   this.pos = 0; // position in buffer
-
-  this.toArray = function() {
-    return this.a.subarray(0, this.pos);
-  };
-
-  this.get = function(index) {
-    return this.a[this.pos + index];
-  };
-
-  this.set = function(index, value) {
-    this.a[this.pos + index] = value;
-  };
 
   this.haveBytes = function() {
     return this.pos < this.a.length;
   };
 
-  this.subarray = function(start, end) {
-    return this.a.subarray(this.pos+start, this.pos+end);
-  };
-
   this.incPos = function(add) {
     this.pos += add;
     if (this.pos > this.a.length) throw new RangeError('out of bounds');
-  };
-
-  this.putByte = function(b) {
-    this.a[this.pos] = b;
-    this.incPos(1);
   };
 
   this.getByte = function() {
@@ -170,9 +149,37 @@ function Buf(array) {
     return String.fromCharCode(this.getByte());
   };
 
+  /*
+  ** Read bytes from *pz and convert them into a positive integer.  When
+  ** finished, leave *pz pointing to the first character past the end of
+  ** the integer.  The *pLen parameter holds the length of the string
+  ** in *pz and is decremented once for each character in the integer.
+  */
+  this.getInt = function(){
+    var v = 0, c;
+    while( (c = zValue[0x7f & this.getByte()]) >= 0 ){
+       v = (v<<6) + c;
+    }
+    this.pos--;
+    return v >>> 0;
+  };
+
+}
+
+function Writer() {
+  this.a = [];
+
+  this.toArray = function() {
+    return this.a;
+  };
+
+  this.putByte = function(b) {
+    this.a.push(b & 0xff);
+  };
+
   this.putChar = function(s) {
     // ASCII only
-    this.putByte(s.charCodeAt(0) & 0xff);
+    this.putByte(s.charCodeAt(0));
   };
 
   /*
@@ -193,26 +200,10 @@ function Buf(array) {
     }
   };
 
-  /*
-  ** Read bytes from *pz and convert them into a positive integer.  When
-  ** finished, leave *pz pointing to the first character past the end of
-  ** the integer.  The *pLen parameter holds the length of the string
-  ** in *pz and is decremented once for each character in the integer.
-  */
-  this.getInt = function(){
-    var v = 0, c;
-    while( (c = zValue[0x7f & this.getByte()]) >= 0 ){
-       v = (v<<6) + c;
-    }
-    this.pos--;
-    return v >>> 0;
-  };
-
-  this.putArray = function(a) {
-    for (var i = 0; i < a.length; i++) {
-      this.a[this.pos++] = a[i];
-    }
-    if (this.pos > this.a.length) throw new RangeError('out of bounds: ' + a.length +' ' + this.pos);
+  this.putArray = function(a, start, end) {
+    if (!start) start = 0;
+    if (!end) end = a.length - start;
+    for (var i = start; i < end; i++) this.a.push(a[i]);
   };
 }
 
@@ -235,6 +226,7 @@ function checksum(arr) {
   var sum3 = 0;
   var N = arr.length;
   var z = 0;
+  //TODO measure if this unrolling is helpful.
   while(N >= 16){
     sum0 = sum0 + arr[z+0] | 0;
     sum1 = sum1 + arr[z+1] | 0;
@@ -339,8 +331,7 @@ function checksum(arr) {
 ** commands.
 */
 fossilDelta.create = function(src, out) {
-  // TODO make delta elastic buffer.
-  var zDelta = new Buf(new Uint8Array(out.length+60));
+  var zDelta = new Writer();
   var lenOut = out.length;
   var lenSrc = src.length;
   var i, lastRead = -1;
@@ -451,7 +442,7 @@ fossilDelta.create = function(src, out) {
           /* Add an insert command before the copy */
           zDelta.putInt(bestLitsz);
           zDelta.putChar(':');
-          zDelta.putArray(out.subarray(base, base+bestLitsz));
+          zDelta.putArray(out, base, base+bestLitsz);
           base += bestLitsz;
         }
         base += bestCnt;
@@ -472,7 +463,7 @@ fossilDelta.create = function(src, out) {
         ** matches.  Do an "insert" for everything that does not match */
         zDelta.putInt(lenOut-base);
         zDelta.putChar(':');
-        zDelta.putArray(out.subarray(base, base+lenOut-base)); // XXX remove base
+        zDelta.putArray(out, base, base+lenOut-base); // XXX remove base
         base = lenOut;
         break;
       }
@@ -488,7 +479,7 @@ fossilDelta.create = function(src, out) {
   if( base<lenOut ){
     zDelta.putInt(lenOut-base);
     zDelta.putChar(':');
-    zDelta.putArray(out.subarray(base));
+    zDelta.putArray(out, base);
   }
   /* Output the final checksum record. */
   zDelta.putInt(checksum(out));
@@ -510,7 +501,7 @@ function logError(s) {
 ** needed.
 */
 fossilDelta.outputSize = function(delta){
-  var zDelta = new Buf(delta);
+  var zDelta = new Reader(delta);
   var size = zDelta.getInt();
   if( zDelta.getChar() !== '\n' ){
     logError('size integer not terminated by \'\\n\'');
@@ -542,7 +533,7 @@ fossilDelta.outputSize = function(delta){
 fossilDelta.apply = function(src, delta) {
   var limit;
   var total = 0;
-  var zDelta = new Buf(delta);
+  var zDelta = new Reader(delta);
   var lenSrc = src.length;
   var lenDelta = delta.length;
 
@@ -551,7 +542,7 @@ fossilDelta.apply = function(src, delta) {
     logError('size integer not terminated by \'\\n\'');
     return null;
   }
-  var zOut = new Buf(new Uint8Array(limit)); // TODO this is elastic
+  var zOut = new Writer();
   while(zDelta.haveBytes()) {
     var cnt, ofst;
     cnt = zDelta.getInt();
@@ -571,7 +562,7 @@ fossilDelta.apply = function(src, delta) {
           logError('copy extends past end of input');
           return null;
         }
-        zOut.putArray(src.subarray(ofst, ofst+cnt));
+        zOut.putArray(src, ofst, ofst+cnt);
         break;
       }
       case ':': {
@@ -584,13 +575,12 @@ fossilDelta.apply = function(src, delta) {
           logError('insert count exceeds size of delta');
           return null;
         }
-        zOut.putArray(zDelta.subarray(0, cnt)); //XXX this toArray! make this delta.subarray(zDelta.pos, zDelta.pos+cnt)
-        zDelta.pos += cnt; // XXX accessing private
+        zOut.putArray(zDelta.a, zDelta.pos, zDelta.pos+cnt);
+        zDelta.pos += cnt;
         break;
       }
       case ';': {
-        //zOut.putByte(0); // XXX wha? DONE
-        var out = zOut.a; //XXX//zOut.toArray();
+        var out = zOut.toArray();
         if( cnt!==checksum(out) ){
           logError('bad checksum');
           return null;
