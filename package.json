@@ -1,0 +1,16 @@
+{
+  "name": "fossil-delta",
+  "version": "0.0.0",
+  "description": "Fossil SCM delta compression",
+  "main": "fossil-delta.js",
+  "scripts": {
+    "test": "faucet test/*.js"
+  },
+  "author": "Dmitry Chestnykh",
+  "license": "BSD",
+  "devDependencies": {
+    "faucet": "0.0.1",
+    "tape": "^2.14.0",
+    "uglifyjs": "^2.3.6"
+  }
+}
