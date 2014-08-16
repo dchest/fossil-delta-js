@@ -1,0 +1,84 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Fossil Delta Compression in JavaScript</title>
+</head>
+<body>
+<style>
+body { font-family: sans-serif }
+table { width: 100%; height: 400px }
+td { padding-right: 10px }
+textarea { width: 100%; height: 100% }
+</style>
+<form onsubmit="return false">
+  <p>
+  <b><a href="https://github.com/dchest/fossil-delta-js">fossil-delta-js</a> &mdash; </b>
+  <button onclick="javascript:create()">Create</button>
+  <button onclick="apply()">Apply</button>
+  </p>
+  <table>
+    <tr>
+      <td>
+  <label>
+    Origin:<br>
+    <textarea name="origin">At last, the vessel set out; and the two banks of the river, stocked with warehouses, timber-yards, and manufactories, opened out like two huge ribbons being unrolled.
+
+A young man of eighteen, with long hair, holding an album under his arm, remained near the helm without moving. Through the haze he surveyed steeples, buildings of which he did not know the names; then, with a parting glance, he took in the Île St. Louis, the Cité, Nôtre Dame; and presently, as Paris disappeared from his view, he heaved a deep sigh.
+</textarea>
+  </label>
+</td>
+<td>
+  <label>
+    Target:<br>
+    <textarea name="target">At last, the vessel set out; and the two banks of the river, stocked with warehouses, timber-yards, and manufactories, opened out like two huge ribbons being unrolled.
+
+A young man of nineteen, with short hair, holding an album under his arm, remained near the helm without moving. Through the haze he surveyed steeples, buildings of which he did not know the names; then, with a parting glance, he took in the Île St. Louis, the Cité, Nôtre Dame; and presently, as Paris disappeared from his view, he heaved a deep sigh.
+
+Frederick Moreau, having just taken his Master's degree, was returning home to Nogent-sur-Seine, where he would have to lead a languishing existence for one month, before going back to begin his legal studies.</textarea>
+  </label>
+</td>
+<td>
+  <label>
+    Delta:<br>
+    <textarea name="delta"></textarea>
+  </label>
+</td>
+</form>
+<script src="fossil-delta.min.js"></script>
+<script>
+
+function decodeUTF8(s) {
+  var i, d = unescape(encodeURIComponent(s)), b = new Array(d.length);
+  for (i = 0; i < d.length; i++) b[i] = d.charCodeAt(i);
+  return b;
+}
+
+function encodeUTF8(arr) {
+  var i, s = [];
+  for (i = 0; i < arr.length; i++) s.push(String.fromCharCode(arr[i]));
+  return decodeURIComponent(escape(s.join('')));
+}
+
+function create() {
+  var origin = decodeUTF8(document.forms[0].origin.value)
+  var target = decodeUTF8(document.forms[0].target.value);
+  var delta = fossilDelta.create(origin, target);
+  document.forms[0].delta.value = encodeUTF8(delta);
+}
+
+function apply() {
+  var origin = decodeUTF8(document.forms[0].origin.value)
+  var delta = decodeUTF8(document.forms[0].delta.value);
+  var target = fossilDelta.apply(origin, delta);
+  if (!target) {
+    alert('Failed to apply delta');
+    document.forms[0].target.value = '';
+  } else {
+    document.forms[0].target.value = encodeUTF8(target);
+  }
+}
+
+</script>
+</body>
+
