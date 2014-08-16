@@ -8,6 +8,8 @@ The cool thing about it is that plain text inputs generate plain text deltas
 * [Algorithm](http://www.fossil-scm.org/index.html/doc/tip/www/delta_encoder_algorithm.wiki)
 * [Original implementation](http://www.fossil-scm.org/index.html/artifact/d1b0598adcd650b3551f63b17dfc864e73775c3d>)
 
+[![Build Status](https://travis-ci.org/dchest/fossil-delta-js.svg?branch=master)
+](https://travis-ci.org/dchest/fossil-delta-js)
 
 Usage
 -----
