@@ -11,6 +11,33 @@ The cool thing about it is that plain text inputs generate plain text deltas
 [![Build Status](https://travis-ci.org/dchest/fossil-delta-js.svg?branch=master)
 ](https://travis-ci.org/dchest/fossil-delta-js)
 
+Installation
+------------
+
+Via NPM:
+
+    $ npm install fossil-delta
+
+Via Bower:
+
+    $ bower install fossil-delta
+
+
+or just download `fossil-delta.min.js`.
+
+Direct usage:
+
+```html
+<script src="fossil-delta.min.js"></script>
+```
+
+CommonJS:
+
+```javascript
+var fossilDelta = require('fossil-delta')
+```
+
+
 Usage
 -----
 
