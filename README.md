@@ -43,7 +43,8 @@ Usage
 
 ### fossilDelta.create(origin, target)
 
-Returns a delta (as `Array` of bytes) from origin to target.
+Returns a delta (as `Array` of bytes) from origin to target (any array-like
+object containing bytes, e.g. `Uint8Array`, `Buffer` or plain `Array`).
 
 ### fossilDelta.apply(origin, delta)
 
