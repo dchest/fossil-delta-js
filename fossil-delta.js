@@ -130,7 +130,7 @@ function Reader(array) {
   // Read base64-encoded unsigned integer.
   this.getInt = function(){
     var v = 0, c;
-    while((c = zValue[0x7f & this.getByte()]) >= 0) {
+    while(this.haveBytes() && (c = zValue[0x7f & this.getByte()]) >= 0) {
        v = (v<<6) + c;
     }
     this.pos--;

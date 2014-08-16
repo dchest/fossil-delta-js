@@ -3,6 +3,9 @@ var fs = require('fs');
 var path = require('path');
 var fossilDelta = require('../fossil-delta.js');
 
+// Silence error logging.
+fossilDelta.logError = function() {}
+
 var makeArray = function(buf) {
   var a = new Array(buf.length);
   for (var i = 0; i < buf.length; i++) a[i] = buf[i];
@@ -19,8 +22,19 @@ test('delta create and apply', function(t) {
     var delta = makeArray(fossilDelta.create(origin, target));
     t.deepEqual(delta, goodDelta);
     var applied = fossilDelta.apply(origin, delta);
-    t.notEqual(applied, null);
+    t.notEqual(applied, null, 'should not be null');
     t.deepEqual(applied, target);
   }
+  t.end();
+});
+
+test('apply truncated delta', function(t) {
+  var dir = path.join(__dirname, 'data', '1');
+  var origin = makeArray(fs.readFileSync(path.join(dir, 'origin')));
+  var target = makeArray(fs.readFileSync(path.join(dir, 'target')));
+  var delta = makeArray(fs.readFileSync(path.join(dir, 'delta')));
+  delta.pop();
+  var applied = fossilDelta.apply(origin, delta);
+  t.equal(applied, null, 'should be null');
   t.end();
 });
