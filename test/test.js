@@ -22,7 +22,6 @@ test('delta create and apply', function(t) {
     var delta = makeArray(fossilDelta.create(origin, target));
     t.deepEqual(delta, goodDelta);
     var applied = fossilDelta.apply(origin, delta);
-    t.notEqual(applied, null, 'should not be null');
     t.deepEqual(applied, target);
   }
   t.end();
@@ -34,7 +33,6 @@ test('apply truncated delta', function(t) {
   var target = makeArray(fs.readFileSync(path.join(dir, 'target')));
   var delta = makeArray(fs.readFileSync(path.join(dir, 'delta')));
   delta.pop();
-  var applied = fossilDelta.apply(origin, delta);
-  t.equal(applied, null, 'should be null');
+  t.throws(function() { fossilDelta.apply(origin, delta) }, Error, 'should throw');
   t.end();
 });

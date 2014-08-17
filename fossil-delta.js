@@ -383,23 +383,16 @@ fossilDelta.create = function(src, out) {
   return zDelta.toArray();
 };
 
-function logError(s) {
-  fossilDelta.logError ? fossilDelta.logError(s) : console.log('ERROR: ' + s);
-}
-
 // Return the size (in bytes) of the output from applying a delta.
 fossilDelta.outputSize = function(delta){
   var zDelta = new Reader(delta);
   var size = zDelta.getInt();
-  if (zDelta.getChar() !== '\n') {
-    logError('size integer not terminated by \'\\n\'');
-    return -1;
-  }
+  if (zDelta.getChar() !== '\n')
+    throw new Error('size integer not terminated by \'\\n\'');
   return size;
 };
 
 // Apply a delta.
-// Returns null on error.
 fossilDelta.apply = function(src, delta) {
   var limit, total = 0;
   var zDelta = new Reader(delta);
@@ -407,10 +400,8 @@ fossilDelta.apply = function(src, delta) {
   var lenDelta = delta.length;
 
   limit = zDelta.getInt();
-  if (zDelta.getChar() !== '\n') {
-    logError('size integer not terminated by \'\\n\'');
-    return null;
-  }
+  if (zDelta.getChar() !== '\n')
+    throw new Error('size integer not terminated by \'\\n\'');
   var zOut = new Writer();
   while(zDelta.haveBytes()) {
     var cnt, ofst;
@@ -419,55 +410,39 @@ fossilDelta.apply = function(src, delta) {
     switch (zDelta.getChar()) {
       case '@':
         ofst = zDelta.getInt();
-        if (zDelta.haveBytes() && zDelta.getChar() !== ',') {
-          logError('copy command not terminated by \',\'');
-          return null;
-        }
+        if (zDelta.haveBytes() && zDelta.getChar() !== ',')
+          throw new Error('copy command not terminated by \',\'');
         total += cnt;
-        if (total > limit) {
-          logError('copy exceeds output file size');
-          return null;
-        }
-        if (ofst+cnt > lenSrc) {
-          logError('copy extends past end of input');
-          return null;
-        }
+        if (total > limit)
+          throw new Error('copy exceeds output file size');
+        if (ofst+cnt > lenSrc)
+          throw new Error('copy extends past end of input');
         zOut.putArray(src, ofst, ofst+cnt);
         break;
 
       case ':':
         total += cnt;
-        if (total > limit) {
-          logError('insert command gives an output larger than predicted');
-          return null;
-        }
-        if (cnt > lenDelta) {
-          logError('insert count exceeds size of delta');
-          return null;
-        }
+        if (total > limit)
+          throw new Error('insert command gives an output larger than predicted');
+        if (cnt > lenDelta)
+          throw new Error('insert count exceeds size of delta');
         zOut.putArray(zDelta.a, zDelta.pos, zDelta.pos+cnt);
         zDelta.pos += cnt;
         break;
 
       case ';':
         var out = zOut.toArray();
-        if (cnt !== checksum(out)) {
-          logError('bad checksum');
-          return null;
-        }
-        if (total !== limit) {
-          logError('generated size does not match predicted size');
-          return null;
-        }
+        if (cnt !== checksum(out))
+          throw new Error('bad checksum');
+        if (total !== limit)
+          throw new Error('generated size does not match predicted size');
         return out;
 
       default:
-        logError('unknown delta operator');
-        return null;
+        throw new Error('unknown delta operator');
     }
   }
-  logError('unterminated delta');
-  return null;
+  throw new Error('unterminated delta');
 };
 
 return fossilDelta;

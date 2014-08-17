@@ -51,10 +51,11 @@ object containing bytes, e.g. `Uint8Array`, `Buffer` or plain `Array`).
 
 Returns target (as `Array` of bytes) by applying delta to origin.
 
-Returns `null` if there was an error. It also logs the reason for error with
-`console.log`. Logging can be overridden by setting `fossilDelta.logError`
-to a function accepting a string.
+Throws an error if it fails to apply the delta
+(e.g. if it was corrupted).
 
 ### fossilDelta.outputSize(delta)
 
 Returns a size of target for this delta.
+
+Throws an error if it can't read the size from delta.
