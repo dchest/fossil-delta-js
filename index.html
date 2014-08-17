@@ -70,12 +70,12 @@ function create() {
 function apply() {
   var origin = decodeUTF8(document.forms[0].origin.value)
   var delta = decodeUTF8(document.forms[0].delta.value);
-  var target = fossilDelta.apply(origin, delta);
-  if (!target) {
-    alert('Failed to apply delta');
-    document.forms[0].target.value = '';
-  } else {
+  try {
+    var target = fossilDelta.apply(origin, delta);
     document.forms[0].target.value = encodeUTF8(target);
+  } catch (e) {
+    alert('Failed to apply delta: ' + e.message + '.');
+    document.forms[0].target.value = '';
   }
 }
 
