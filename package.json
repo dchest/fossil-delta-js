@@ -19,8 +19,8 @@
   "author": "Dmitry Chestnykh",
   "license": "BSD",
   "devDependencies": {
-    "faucet": "0.0.1",
-    "tape": "^2.14.0",
-    "uglifyjs": "^2.3.6"
+    "faucet": "0.x.x",
+    "tape": "2.x.x",
+    "uglify-js": "2.x.x"
   }
 }
