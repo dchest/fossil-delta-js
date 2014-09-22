@@ -1,6 +1,6 @@
 {
   "name": "fossil-delta",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Fossil SCM delta compression",
   "main": "fossil-delta.js",
   "keywords": [
@@ -11,6 +11,10 @@
   "scripts": {
     "build": "uglifyjs fossil-delta.js -c -m -o fossil-delta.min.js",
     "test": "faucet test/*.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dchest/fossil-delta-js"
   },
   "author": "Dmitry Chestnykh",
   "license": "BSD",
