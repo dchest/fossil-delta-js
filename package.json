@@ -1,6 +1,6 @@
 {
   "name": "fossil-delta",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Fossil SCM delta compression",
   "main": "fossil-delta.js",
   "keywords": [
