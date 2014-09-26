@@ -170,8 +170,8 @@ function Writer() {
 
   // Copy from array at start to end.
   this.putArray = function(a, start, end) {
-    if (!start) start = 0;
-    if (!end) end = a.length - start;
+    if (typeof start === 'undefined') start = 0;
+    if (typeof end === 'undefined') end = a.length - start;
     for (var i = start; i < end; i++) this.a.push(a[i]);
   };
 }
@@ -360,7 +360,7 @@ fossilDelta.create = function(src, out) {
         // matches.  Do an "insert" for everything that does not match
         zDelta.putInt(lenOut-base);
         zDelta.putChar(':');
-        zDelta.putArray(out, base, base+lenOut-base); // XXX remove base
+        zDelta.putArray(out, base, base+lenOut-base);
         base = lenOut;
         break;
       }
@@ -375,7 +375,7 @@ fossilDelta.create = function(src, out) {
   if(base < lenOut) {
     zDelta.putInt(lenOut-base);
     zDelta.putChar(':');
-    zDelta.putArray(out, base);
+    zDelta.putArray(out, base, base+lenOut-base);
   }
   // Output the final checksum record.
   zDelta.putInt(checksum(out));
