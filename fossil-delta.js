@@ -51,6 +51,7 @@
   if (typeof module !== 'undefined' && module.exports) module.exports = factory();
   else root.fossilDelta = factory();
 })(this, function() {
+'use strict';
 
 var fossilDelta = {};
 
