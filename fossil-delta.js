@@ -173,8 +173,6 @@ Writer.prototype.putInt = function(v){
 
 // Copy from array at start to end.
 Writer.prototype.putArray = function(a, start, end) {
-  if (typeof start === 'undefined') start = 0;
-  if (typeof end === 'undefined') end = a.length - start;
   for (var i = start; i < end; i++) this.a.push(a[i]);
 };
 
@@ -248,7 +246,7 @@ fossilDelta.create = function(src, out) {
   if (lenSrc <= NHASH) {
     zDelta.putInt(lenOut);
     zDelta.putChar(':');
-    zDelta.putArray(out);
+    zDelta.putArray(out, 0, lenOut);
     zDelta.putInt(checksum(out));
     zDelta.putChar(';');
     return zDelta.toArray();
