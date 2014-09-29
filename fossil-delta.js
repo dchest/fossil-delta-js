@@ -62,36 +62,36 @@ function RollingHash() {
   this.b = 0; // values   (16-bit unsigned)
   this.i = 0; // start of the hash window (16-bit unsigned)
   this.z = new Array(NHASH); // the values that have been hashed.
-
-  // Initialize the rolling hash using the first NHASH bytes of
-  // z at the given position.
-  this.init = function(z, pos) {
-    var a = 0, b = 0, i, x;
-    for(i = 0; i < NHASH; i++){
-      x = z[pos+i];
-      a = (a + x) & 0xffff;
-      b = (b + (NHASH-i)*x) & 0xffff;
-      this.z[i] = x;
-    }
-    this.a = a & 0xffff;
-    this.b = b & 0xffff;
-    this.i = 0;
-  };
-
-  // Advance the rolling hash by a single byte "c".
-  this.next = function(c) {
-    var old = this.z[this.i];
-    this.z[this.i] = c;
-    this.i = (this.i+1)&(NHASH-1);
-    this.a = (this.a - old + c) & 0xffff;
-    this.b = (this.b - NHASH*old + this.a) & 0xffff;
-  };
-
-  // Return a 32-bit hash value.
-  this.value = function() {
-    return ((this.a & 0xffff) | (this.b & 0xffff)<<16)>>>0;
-  };
 }
+
+// Initialize the rolling hash using the first NHASH bytes of
+// z at the given position.
+RollingHash.prototype.init = function(z, pos) {
+  var a = 0, b = 0, i, x;
+  for(i = 0; i < NHASH; i++){
+    x = z[pos+i];
+    a = (a + x) & 0xffff;
+    b = (b + (NHASH-i)*x) & 0xffff;
+    this.z[i] = x;
+  }
+  this.a = a & 0xffff;
+  this.b = b & 0xffff;
+  this.i = 0;
+};
+
+// Advance the rolling hash by a single byte "c".
+RollingHash.prototype.next = function(c) {
+  var old = this.z[this.i];
+  this.z[this.i] = c;
+  this.i = (this.i+1)&(NHASH-1);
+  this.a = (this.a - old + c) & 0xffff;
+  this.b = (this.b - NHASH*old + this.a) & 0xffff;
+};
+
+// Return a 32-bit hash value.
+RollingHash.prototype.value = function() {
+  return ((this.a & 0xffff) | (this.b & 0xffff)<<16)>>>0;
+};
 
 var zDigits = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz~".
                 split('').map(function (x) { return x.charCodeAt(0); });
@@ -111,70 +111,71 @@ var zValue = [
 function Reader(array) {
   this.a = array; // source array
   this.pos = 0;   // current position in array
+}
 
-  this.haveBytes = function() {
-    return this.pos < this.a.length;
-  };
+Reader.prototype.haveBytes = function() {
+  return this.pos < this.a.length;
+};
 
-  this.getByte = function() {
-    var b = this.a[this.pos];
-    this.pos++;
-    if (this.pos > this.a.length) throw new RangeError('out of bounds');
-    return b;
-  };
+Reader.prototype.getByte = function() {
+  var b = this.a[this.pos];
+  this.pos++;
+  if (this.pos > this.a.length) throw new RangeError('out of bounds');
+  return b;
+};
 
-  this.getChar = function() {
-    return String.fromCharCode(this.getByte());
-  };
+Reader.prototype.getChar = function() {
+  return String.fromCharCode(this.getByte());
+};
 
   // Read base64-encoded unsigned integer.
-  this.getInt = function(){
-    var v = 0, c;
-    while(this.haveBytes() && (c = zValue[0x7f & this.getByte()]) >= 0) {
-       v = (v<<6) + c;
-    }
-    this.pos--;
-    return v >>> 0;
-  };
-}
+Reader.prototype.getInt = function(){
+  var v = 0, c;
+  while(this.haveBytes() && (c = zValue[0x7f & this.getByte()]) >= 0) {
+     v = (v<<6) + c;
+  }
+  this.pos--;
+  return v >>> 0;
+};
+
 
 // Write writes an array.
 function Writer() {
   this.a = [];
-
-  this.toArray = function() {
-    return this.a;
-  };
-
-  this.putByte = function(b) {
-    this.a.push(b & 0xff);
-  };
-
-  // Write an ASCII character (s is a one-char string).
-  this.putChar = function(s) {
-    this.putByte(s.charCodeAt(0));
-  };
-
-  // Write a base64 unsigned integer.
-  this.putInt = function(v){
-    var i, j, zBuf = [];
-    if (v === 0) {
-      this.putChar('0');
-      return;
-    }
-    for (i = 0; v > 0; i++, v >>>= 6)
-      zBuf.push(zDigits[v&0x3f]);
-    for (j = i-1; j >= 0; j--)
-      this.putByte(zBuf[j]);
-  };
-
-  // Copy from array at start to end.
-  this.putArray = function(a, start, end) {
-    if (typeof start === 'undefined') start = 0;
-    if (typeof end === 'undefined') end = a.length - start;
-    for (var i = start; i < end; i++) this.a.push(a[i]);
-  };
 }
+
+Writer.prototype.toArray = function() {
+  return this.a;
+};
+
+Writer.prototype.putByte = function(b) {
+  this.a.push(b & 0xff);
+};
+
+// Write an ASCII character (s is a one-char string).
+Writer.prototype.putChar = function(s) {
+  this.putByte(s.charCodeAt(0));
+};
+
+// Write a base64 unsigned integer.
+Writer.prototype.putInt = function(v){
+  var i, j, zBuf = [];
+  if (v === 0) {
+    this.putChar('0');
+    return;
+  }
+  for (i = 0; v > 0; i++, v >>>= 6)
+    zBuf.push(zDigits[v&0x3f]);
+  for (j = i-1; j >= 0; j--)
+    this.putByte(zBuf[j]);
+};
+
+// Copy from array at start to end.
+Writer.prototype.putArray = function(a, start, end) {
+  if (typeof start === 'undefined') start = 0;
+  if (typeof end === 'undefined') end = a.length - start;
+  for (var i = start; i < end; i++) this.a.push(a[i]);
+};
 
 // Return the number digits in the base64 representation of a positive integer.
 function digitCount(v){
