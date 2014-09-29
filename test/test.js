@@ -13,7 +13,7 @@ var makeArray = function(buf) {
 }
 
 test('delta create and apply', function(t) {
-  var NTESTS = 4;
+  var NTESTS = 5;
   for (var i = 1; i <= NTESTS; i++) {
     var dir = path.join(__dirname, 'data', i.toString());
     var origin = makeArray(fs.readFileSync(path.join(dir, 'origin')));
