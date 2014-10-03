@@ -129,7 +129,7 @@ Reader.prototype.getChar = function() {
   return String.fromCharCode(this.getByte());
 };
 
-  // Read base64-encoded unsigned integer.
+// Read base64-encoded unsigned integer.
 Reader.prototype.getInt = function(){
   var v = 0, c;
   while(this.haveBytes() && (c = zValue[0x7f & this.getByte()]) >= 0) {
