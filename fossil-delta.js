@@ -53,7 +53,9 @@
 })(this, function() {
 'use strict';
 
-var fossilDelta = {};
+var fossilDelta = {
+  ENABLE_CHECKSUM: false
+};
 
 // Hash window width in bytes. Must be a power of two.
 var NHASH = 16;
@@ -432,7 +434,7 @@ fossilDelta.apply = function(src, delta) {
 
       case ';':
         var out = zOut.toArray();
-        if (cnt !== checksum(out))
+        if (fossilDelta.ENABLE_CHECKSUM && cnt !== checksum(out))
           throw new Error('bad checksum');
         if (total !== limit)
           throw new Error('generated size does not match predicted size');
