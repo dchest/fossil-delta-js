@@ -15,14 +15,7 @@ The cool thing about it is that plain text inputs generate plain text deltas
 Installation
 ------------
 
-Via NPM:
-
     $ npm install fossil-delta
-
-Via Bower:
-
-    $ bower install fossil-delta
-
 
 or just download `fossil-delta.min.js`.
 
