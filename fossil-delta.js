@@ -393,7 +393,7 @@ fossilDelta.outputSize = function(delta){
 };
 
 // Apply a delta.
-fossilDelta.apply = function(src, delta) {
+fossilDelta.apply = function(src, delta, opts) {
   var limit, total = 0;
   var zDelta = new Reader(delta);
   var lenSrc = src.length;
@@ -432,7 +432,7 @@ fossilDelta.apply = function(src, delta) {
 
       case ';':
         var out = zOut.toArray();
-        if (cnt !== checksum(out))
+        if ((!opts || opts.verifyChecksum !== false) && cnt !== checksum(out))
           throw new Error('bad checksum');
         if (total !== limit)
           throw new Error('generated size does not match predicted size');
