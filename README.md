@@ -47,12 +47,22 @@ Usage
 Returns a delta (as `Array` of bytes) from origin to target (any array-like
 object containing bytes, e.g. `Uint8Array`, `Buffer` or plain `Array`).
 
-### fossilDelta.apply(origin, delta)
+### fossilDelta.apply(origin, delta[, opts])
 
 Returns target (as `Array` of bytes) by applying delta to origin.
 
 Throws an error if it fails to apply the delta
 (e.g. if it was corrupted).
+
+Optional argument `opts` can be
+
+```
+{
+    verifyChecksum: false
+}
+```
+
+to disable checksum verification (which is enabled by default.)
 
 ### fossilDelta.outputSize(delta)
 
