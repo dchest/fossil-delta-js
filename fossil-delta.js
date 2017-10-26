@@ -432,7 +432,7 @@ fossilDelta.apply = function(src, delta, opts) {
 
       case ';':
         var out = zOut.toArray();
-        if (opts && opts.verifyChecksum && cnt !== checksum(out))
+        if ((!opts || opts.verifyChecksum !== false) && cnt !== checksum(out))
           throw new Error('bad checksum');
         if (total !== limit)
           throw new Error('generated size does not match predicted size');
