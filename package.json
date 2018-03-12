@@ -20,7 +20,7 @@
   "license": "BSD",
   "devDependencies": {
     "faucet": "0.x.x",
-    "tape": "2.x.x",
-    "uglify-js": "2.x.x"
+    "tape": "^2.14.1",
+    "uglify-js": "^2.8.29"
   }
 }
