@@ -21,14 +21,14 @@ Usage
 import { createDelta, applyDelta } from 'fossil-delta';
 ```
 
-### createDelta(source, target)
+### createDelta(source, target) -> delta
 
 Returns a delta from source to target.
 
 `source` and `target` must be a `Uint8Array` or an `Array` of bytes.
 The same type will be returned.
 
-### applyDelta(origin, delta[, opts])
+### applyDelta(source, delta[, opts]) -> target
 
 Returns the target by applying the delta to the origin.
 
@@ -47,7 +47,7 @@ Optional argument `opts` can be:
 
 to disable checksum verification (which is enabled by default.)
 
-### getDeltaTargetSize(delta)
+### getDeltaTargetSize(delta) -> size
 
 Returns the size of the target for this delta.
 
@@ -63,7 +63,7 @@ To simplify working with plain text strings, the library provides the following 
 which automatically encode and decode strings using `TextEncoder` and `TextDecoder` before processing:
 
 * `createStringDelta(source: string, target: string): string`
-* `applyStringDelta(origin: string, delta: string, [, opts]): string`
+* `applyStringDelta(origin: string, delta: string, options?: Options): string`
 * `getStringDeltaTargetSize(delta: string): number`
 
 Note that `getStringDeltaTargetSize()` will return the size of the target string in UTF-8 bytes,
