@@ -1,4 +1,2 @@
-.travis.yml
-bower.json
-bower_components
 test
+tsconfig.json
